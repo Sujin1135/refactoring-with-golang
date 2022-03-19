@@ -35,22 +35,10 @@ func statement(invoice *Invoice) (string, error) {
 	paymentStr := fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer)
 
 	for _, item := range *invoice.Performances {
-		thisAmount := 0
-
-		switch item.Play.Type {
-		case Tragedy:
-			thisAmount = 40000
-			if item.Audience > 30 {
-				thisAmount += 1000 * (item.Audience - 30)
-			}
-		case Comedy:
-			thisAmount = 30000
-			if item.Audience > 20 {
-				thisAmount += 10000 + 500*(item.Audience-20)
-			}
-			thisAmount += 300 * item.Audience
-		default:
-			return "", errors.New(fmt.Sprintf("Not found this play type:%s\n", item.Play.Type))
+		thisAmount, err := amountFor(item)
+		if err != nil {
+			fmt.Printf("failed to calculate an amount from an item: %v\n", item)
+			return "", err
 		}
 
 		volumeCredit += math.Max(float64(item.Audience-30), 0)
@@ -67,6 +55,27 @@ func statement(invoice *Invoice) (string, error) {
 	paymentStr += fmt.Sprintf("적립 포인트: %f점\n", volumeCredit)
 
 	return paymentStr, nil
+}
+
+func amountFor(item Performance) (int, error) {
+	thisAmount := 0
+
+	switch item.Play.Type {
+	case Tragedy:
+		thisAmount = 40000
+		if item.Audience > 30 {
+			thisAmount += 1000 * (item.Audience - 30)
+		}
+	case Comedy:
+		thisAmount = 30000
+		if item.Audience > 20 {
+			thisAmount += 10000 + 500*(item.Audience-20)
+		}
+		thisAmount += 300 * item.Audience
+	default:
+		return 0, errors.New(fmt.Sprintf("Not found this play type:%s\n", item.Play.Type))
+	}
+	return thisAmount, nil
 }
 
 func main() {
