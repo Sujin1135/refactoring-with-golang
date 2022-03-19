@@ -23,7 +23,7 @@ type Performance struct {
 	Audience int
 }
 
-type Performances []Performance
+type Performances []*Performance
 
 type Invoice struct {
 	Customer     string
@@ -57,7 +57,7 @@ func statement(invoice *Invoice) (string, error) {
 	return paymentStr, nil
 }
 
-func amountFor(item Performance) (int, error) {
+func amountFor(item *Performance) (int, error) {
 	thisAmount := 0
 
 	switch item.Play.Type {
@@ -79,9 +79,11 @@ func amountFor(item Performance) (int, error) {
 }
 
 func main() {
-	otti := &Play{Name: "Otti", Type: Comedy}
+	hamlet := &Play{Name: "Hamlet", Type: Comedy}
+	romeo := &Play{Name: "Romeo and Juliet", Type: Tragedy}
 	performs := &Performances{
-		Performance{Play: otti, Audience: 50},
+		&Performance{Play: hamlet, Audience: 50},
+		&Performance{Play: romeo, Audience: 20},
 	}
 
 	result, err := statement(&Invoice{Customer: "Chris", Performances: performs})
