@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 )
 
 type PlayType string
@@ -30,9 +31,10 @@ type Invoice struct {
 	Performances *Performances
 }
 
-func statement(invoice *Invoice) (string, error) {
+func Statement(invoice *Invoice) (string, error) {
 	totalAmount, volumeCredit := 0, float64(0)
-	paymentStr := fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer)
+	var result strings.Builder
+	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
 
 	for _, item := range *invoice.Performances {
 		thisAmount, err := amountFor(item)
@@ -47,31 +49,32 @@ func statement(invoice *Invoice) (string, error) {
 			volumeCredit += math.Floor(float64(item.Audience / 5))
 		}
 
-		paymentStr += fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, thisAmount, item.Audience)
+		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, thisAmount, item.Audience))
 		totalAmount += thisAmount
 	}
 
-	paymentStr += fmt.Sprintf("총액: %d\n", totalAmount)
-	paymentStr += fmt.Sprintf("적립 포인트: %f점\n", volumeCredit)
+	result.WriteString(fmt.Sprintf("총액: %d\n", totalAmount))
+	result.WriteString(fmt.Sprintf("적립 포인트: %f점\n", volumeCredit))
 
-	return paymentStr, nil
+	return result.String(), nil
 }
 
 func amountFor(item *Performance) (int, error) {
 	thisAmount := 0
+	audience := item.Audience
 
 	switch item.Play.Type {
 	case Tragedy:
 		thisAmount = 40000
-		if item.Audience > 30 {
-			thisAmount += 1000 * (item.Audience - 30)
+		if audience > 30 {
+			thisAmount += 1000 * (audience - 30)
 		}
 	case Comedy:
 		thisAmount = 30000
-		if item.Audience > 20 {
-			thisAmount += 10000 + 500*(item.Audience-20)
+		if audience > 20 {
+			thisAmount += 10000 + 500*(audience-20)
 		}
-		thisAmount += 300 * item.Audience
+		thisAmount += 300 * audience
 	default:
 		return 0, errors.New(fmt.Sprintf("Not found this play type:%s\n", item.Play.Type))
 	}
@@ -86,7 +89,7 @@ func main() {
 		&Performance{Play: romeo, Audience: 20},
 	}
 
-	result, err := statement(&Invoice{Customer: "Chris", Performances: performs})
+	result, err := Statement(&Invoice{Customer: "Chris", Performances: performs})
 	if err != nil {
 		fmt.Errorf("occurred an error when get a payment's statement")
 	}
