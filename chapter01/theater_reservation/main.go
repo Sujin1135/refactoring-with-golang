@@ -32,8 +32,9 @@ type Invoice struct {
 }
 
 func Statement(invoice *Invoice) (string, error) {
-	totalAmount, volumeCredit := 0, float64(0)
 	var result strings.Builder
+
+	totalAmount, volumeCredit := 0, float64(0)
 	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
 
 	for _, item := range *invoice.Performances {
