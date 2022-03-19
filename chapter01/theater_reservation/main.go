@@ -60,25 +60,25 @@ func Statement(invoice *Invoice) (string, error) {
 }
 
 func amountFor(item *Performance) (int, error) {
-	thisAmount := 0
+	result := 0
 	audience := item.Audience
 
 	switch item.Play.Type {
 	case Tragedy:
-		thisAmount = 40000
+		result = 40000
 		if audience > 30 {
-			thisAmount += 1000 * (audience - 30)
+			result += 1000 * (audience - 30)
 		}
 	case Comedy:
-		thisAmount = 30000
+		result = 30000
 		if audience > 20 {
-			thisAmount += 10000 + 500*(audience-20)
+			result += 10000 + 500*(audience-20)
 		}
-		thisAmount += 300 * audience
+		result += 300 * audience
 	default:
 		return 0, errors.New(fmt.Sprintf("Not found this play type:%s\n", item.Play.Type))
 	}
-	return thisAmount, nil
+	return result, nil
 }
 
 func main() {
