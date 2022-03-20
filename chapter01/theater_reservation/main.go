@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -38,20 +37,14 @@ func Statement(invoice *Invoice) (string, error) {
 	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
 
 	for _, item := range *invoice.Performances {
-		thisAmount, err := amountFor(item)
-		if err != nil {
-			fmt.Printf("failed to calculate an amount from an item: %v\n", item)
-			return "", err
-		}
-
 		volumeCredit += math.Max(float64(item.Audience-30), 0)
 
 		if Comedy == item.Play.Type {
 			volumeCredit += math.Floor(float64(item.Audience / 5))
 		}
 
-		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, thisAmount, item.Audience))
-		totalAmount += thisAmount
+		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, amountFor(item), item.Audience))
+		totalAmount += amountFor(item)
 	}
 
 	result.WriteString(fmt.Sprintf("총액: %d\n", totalAmount))
@@ -60,7 +53,7 @@ func Statement(invoice *Invoice) (string, error) {
 	return result.String(), nil
 }
 
-func amountFor(item *Performance) (int, error) {
+func amountFor(item *Performance) int {
 	result := 0
 	audience := item.Audience
 
@@ -76,10 +69,8 @@ func amountFor(item *Performance) (int, error) {
 			result += 10000 + 500*(audience-20)
 		}
 		result += 300 * audience
-	default:
-		return 0, errors.New(fmt.Sprintf("Not found this play type:%s\n", item.Play.Type))
 	}
-	return result, nil
+	return result
 }
 
 func main() {
