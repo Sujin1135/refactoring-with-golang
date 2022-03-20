@@ -37,12 +37,7 @@ func Statement(invoice *Invoice) (string, error) {
 	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
 
 	for _, item := range *invoice.Performances {
-		volumeCredit += math.Max(float64(item.Audience-30), 0)
-
-		if Comedy == item.Play.Type {
-			volumeCredit += math.Floor(float64(item.Audience / 5))
-		}
-
+		volumeCredit += volumeCreditsFor(item)
 		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, amountFor(item), item.Audience))
 		totalAmount += amountFor(item)
 	}
@@ -51,6 +46,16 @@ func Statement(invoice *Invoice) (string, error) {
 	result.WriteString(fmt.Sprintf("적립 포인트: %f점\n", volumeCredit))
 
 	return result.String(), nil
+}
+
+func volumeCreditsFor(aPerformance *Performance) float64 {
+	volumeCredit := float64(0)
+	volumeCredit += math.Max(float64(aPerformance.Audience-30), 0)
+
+	if Comedy == aPerformance.Play.Type {
+		volumeCredit += math.Floor(float64(aPerformance.Audience / 5))
+	}
+	return volumeCredit
 }
 
 func amountFor(item *Performance) int {
