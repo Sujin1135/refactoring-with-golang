@@ -64,16 +64,27 @@ func amountFor(item *Performance) int {
 
 	switch item.Play.Type {
 	case Tragedy:
-		result = 40000
-		if audience > 30 {
-			result += 1000 * (audience - 30)
-		}
+		result = amountTragedy(audience)
 	case Comedy:
-		result = 30000
-		if audience > 20 {
-			result += 10000 + 500*(audience-20)
-		}
-		result += 300 * audience
+		result = amountComedy(audience)
+	}
+	return result
+}
+
+func amountComedy(audience int) int {
+	result := 30000
+
+	if audience > 20 {
+		result += 10000 + 500*(audience-20)
+	}
+	result += 300 * audience
+	return result
+}
+
+func amountTragedy(audience int) int {
+	result := 40000
+	if audience > 30 {
+		result += 1000 * (audience - 30)
 	}
 	return result
 }
