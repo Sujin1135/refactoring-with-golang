@@ -30,18 +30,36 @@ type Invoice struct {
 	Performances *Performances
 }
 
+type statementData struct {
+	Amount        int
+	VolumeCredits float64
+	Invoice       *Invoice
+}
+
+func newStatementData(invoice *Invoice) *statementData {
+	return &statementData{
+		Amount:        totalAmount(*invoice.Performances),
+		VolumeCredits: totalVolumeCredits(*invoice.Performances),
+		Invoice:       invoice,
+	}
+}
+
 func Statement(invoice *Invoice) (string, error) {
+	statementData := newStatementData(invoice)
+	return renderText(statementData)
+}
+
+func renderText(data *statementData) (string, error) {
 	var result strings.Builder
 
-	totalAmount, volumeCredit := totalAmount(*invoice.Performances), totalVolumeCredits(*invoice.Performances)
-	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
+	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", data.Invoice.Customer))
 
-	for _, item := range *invoice.Performances {
+	for _, item := range *data.Invoice.Performances {
 		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, amountFor(item), item.Audience))
 	}
 
-	result.WriteString(fmt.Sprintf("총액: %d\n", totalAmount))
-	result.WriteString(fmt.Sprintf("적립 포인트: %f점\n", volumeCredit))
+	result.WriteString(fmt.Sprintf("총액: %d\n", data.Amount))
+	result.WriteString(fmt.Sprintf("적립 포인트: %f점\n", data.VolumeCredits))
 
 	return result.String(), nil
 }
