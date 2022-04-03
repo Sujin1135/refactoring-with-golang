@@ -33,19 +33,35 @@ type Invoice struct {
 func Statement(invoice *Invoice) (string, error) {
 	var result strings.Builder
 
-	totalAmount, volumeCredit := 0, float64(0)
+	totalAmount, volumeCredit := totalAmount(*invoice.Performances), totalVolumeCredits(*invoice.Performances)
 	result.WriteString(fmt.Sprintf("청구 내역 (고객명: %s)\n", invoice.Customer))
 
 	for _, item := range *invoice.Performances {
-		volumeCredit += volumeCreditsFor(item)
 		result.WriteString(fmt.Sprintf("%s: %d (%d석)\n", item.Play.Name, amountFor(item), item.Audience))
-		totalAmount += amountFor(item)
 	}
 
 	result.WriteString(fmt.Sprintf("총액: %d\n", totalAmount))
 	result.WriteString(fmt.Sprintf("적립 포인트: %f점\n", volumeCredit))
 
 	return result.String(), nil
+}
+
+func totalVolumeCredits(aPerformances Performances) float64 {
+	volumeCredits := float64(0)
+
+	for _, item := range aPerformances {
+		volumeCredits += volumeCreditsFor(item)
+	}
+	return volumeCredits
+}
+
+func totalAmount(aPerformance Performances) int {
+	total := 0
+
+	for _, item := range aPerformance {
+		total += amountFor(item)
+	}
+	return total
 }
 
 func volumeCreditsFor(aPerformance *Performance) float64 {
